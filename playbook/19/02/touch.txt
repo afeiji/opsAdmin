@@ -1,0 +1,10 @@
+---
+- name: create_user
+  hosts: testhost
+  user: root
+  gather_facts: false
+  vars:
+    - user: "test"
+  tasks:
+    - name: create user
+      user: name="{{ user }}"

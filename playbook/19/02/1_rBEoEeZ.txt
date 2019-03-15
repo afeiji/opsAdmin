@@ -1,0 +1,513 @@
+INSTALLED_APPS = [
+    ...
+    'django_filters',
+]
+
+
+
+
+```
+import django_filters
+from .models import WorkOrder
+
+
+class WorkorderFilter(django_filters.FilterSet):
+    title = django_filters.CharFilter(field_name="title", lookup_expr="icontains")
+    order_contents = django_filters.CharFilter(field_name="order_contents", lookup_expr="icontains")
+
+    class Meta:
+        model = WorkOrder]
+        fields = ["title", "order_contents"]
+```
+
+
+models.py
+```
+class Book(models.Model):
+    """
+    图书
+    """
+
+    name = models.CharField("书名", max_length=100, help_text="书名")
+    # 作者和书是多对多的关系
+    authors = models.ManyToManyField(Author, verbose_name="作者", help_text="作者")
+    # 一本书只能被一家出版，出版商可以出版多本书
+    publisher = models.ForeignKey(Publish, verbose_name="出版社", help_text="出版商")
+    publication_date = models.DateField("出版时间", null=True, blank=True, help_text="出版日前")
+
+    class Meta:
+        verbose_name = '图书信息'
+        verbose_name_plural = verbose_name
+        ordering = ['-publication_date']
+
+    def __str__(self):
+        return self.name
+```
+
+
+views.py
+def filter_books(objects, request):
+    filter_author = request.POST['author']
+    if (filter_author):
+        objects = objects.filter(author__icontains=filter_author)
+    return objects
+
+上面的方式只有搜索一个字段，搜索的字段多少是什么样子呢？
+
+def filter_libooks(objects, request):
+    filter_publication_date = request.POST['publication_date']
+    filter_authors = request.POST['authors']
+    filter_name = request.POST['name']
+    if (filter_publication_date):
+        objects = objects.filter(book__filter_publication_date__contains=filter_filter_publication_date)
+    if (filter_authors):
+        objects = objects.filter(book__filter_authors__contains=filter_filter_authors)
+    if (filter_name):
+        objects = objects.filter(uuid_contains=filter_name)        
+    return objects
+
+要是搜索多个条件，代码重新的就好像有点多；这个时候django_filters就闪亮登场了
+
+
+
+
+
+#encoding:utf-8
+from rest_framework import viewsets, response,status
+from .models import WorkOrder
+from .filters import WorkorderFilter
+from .serializers import WorkOrderSerializer
+import time
+
+class WorkOrderViewset(viewsets.ModelViewSet):
+    queryset = WorkOrder.objects.all()
+    serializer_class = WorkOrderSerializer
+    filter_class = WorkorderFilter
+    filter_fields = ("title", "order_contents")
+
+    def get_queryset(self):
+        status = self.request.GET.get('status',None)
+        applicant = self.request.user
+        # 获取当前登录用户的所有组的信息，RBAC 用户-->组-->权限
+        role = applicant.groups.all().values('name')
+        role_name = [r['name'] for r in role]
+        queryset = super(WorkOrderViewset, self).get_queryset()
+
+        #判断传来的status值是申请列表还是历史列表
+        if status and int(status) == 1:
+            queryset = WorkOrder.objects.filter(status__lte=int(status))
+        elif status and int(status) == 2:
+            queryset = WorkOrder.objects.filter(status__gte=int(status))
+        else:
+            queryset = WorkOrder.objects.all()
+
+        # 判断登录用户是否为管理员，是则显示所有工单，否则只显示自己的，ops是我的组名
+        if "ops" not in role_name:
+            queryset = queryset.filter(applicant=applicant)
+        return queryset
+
+    def partial_update(self, request, *args, **kwargs):
+        pk = int(kwargs.get("pk"))
+        final_processor = self.request.user
+        data = request.data
+        data['final_processor'] = final_processor
+        # 获取处理时间
+        data['complete_time'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        WorkOrder.objects.filter(pk=pk).update(**data)
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+	
+	
+import django_filters
+from .models import WorkOrder
+
+
+INSTALLED_APPS = [
+    'workorder',
+]
+	
+	
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+addFile(file,fileList){
+    this.fileList = fileList;
+    //限制上传文件为5M
+    var sizeIsSatisfy = file.size < 5*1024*1024 ? true:false;
+    if(sizeIsSatisfy){
+        return true;
+    }else{
+        this.fileSizeIsSatisfy = false;
+        return false;
+    }
+}, 
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+
+	input {
+        stdin { }
+}
+output {
+        stdout {
+                codec => rubydebug {}
+        }
+        elasticsearch {
+                embedded => true
+        }
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+   1871 -
+     35 221.192.178.188
+     35 113.57.245.150
+     34 124.160.219.167
+     34 122.192.15.123
+     32 61.158.148.4
+     32 218.26.54.79
+     31 61.158.148.24
+     29 61.158.152.92
+     28 61.158.149.149
+     28 43.250.200.95
+     28 153.0.7.28
+     28 112.224.19.30
+     26 112.96.66.70
+     26 112.65.61.92
+     25 61.158.148.48
+     25 101.206.167.29
+     24 220.202.152.113
+     24 220.202.152.11
+     23 45.115.159.26
+     23 43.250.200.114
+     23 221.192.179.132
+     23 112.97.61.10
+     23 111.14.223.10
+     22 61.158.152.97
+     22 124.160.215.43
+     22 119.39.248.28
+     22 112.97.182.69
+     22 112.224.1.36
+     21 61.158.148.55
+     21 124.160.213.212
+     21 118.212.204.195
+     20 61.158.152.84
+     20 61.158.152.81
+     20 61.158.152.168
+     20 61.158.148.109
+     20 220.197.208.28
+     20 122.194.3.101
+     20 112.97.56.48
+     20 112.97.246.224
+     19 175.167.146.22
+     19 112.97.164.203
+     18 61.158.152.166
+     18 58.243.250.149
+     18 119.39.248.67
+     18 117.59.84.107
+     18 112.224.33.165
+     17 61.181.236.87
+     17 61.158.152.138
+     17 61.158.146.200
+     17 58.243.254.119
+     17 221.192.179.242
+     17 221.192.178.194
+     17 124.64.18.179
+     17 123.147.250.210
+     17 103.251.99.93
+     16 61.158.148.123
+     16 58.243.254.111
+     16 58.243.250.180
+     16 58.16.228.26
+     16 43.250.200.97
+     16 221.192.179.227
+     16 220.202.152.61
+     16 220.202.152.43
+     16 220.197.208.14
+     16 202.100.25.155
+     16 175.167.146.251
+     16 124.64.16.191
+     16 124.160.219.46
+     16 124.152.206.166
+     16 121.31.246.82
+     16 119.62.124.143
+     15 61.158.152.243
+     15 61.158.152.110
+     15 61.158.149.15
+     15 61.158.147.86
+     15 61.158.147.168
+     15 61.158.146.10
+     15 58.243.250.159
+     15 43.250.200.43
+     15 43.250.200.120
+     15 223.104.90.25
+     15 223.104.178.248
+     15 221.192.180.162
+     15 221.192.179.174
+     15 221.192.179.139
+     15 221.192.178.106
+     15 220.249.162.109
+     15 220.202.152.124
+     15 180.95.131.109
+     15 14.204.0.80
+     15 122.192.14.150
+     15 121.31.246.243
+     15 119.39.248.2
+     15 113.5.5.24
+     15 113.200.85.162
+     15 113.200.205.112
+     15 112.97.63.162
+     15 112.96.194.182
+     14 61.158.152.89
+
+	
+	
+	
+	
+	费用：169阿里云：11000（169包月服务器）+1500（磁盘）+3000（短信）+900(付费问诊服务器) 线下服务加磁盘（2500） 226800
+	
+	169腾讯云：1500 	18000
+	
+	1康腾讯云一个月2700（服务器1500+CDN、SLB一个月100）
+	
+	
+	
+	
+42.236.10.113|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/400630538.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/400630538.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.103|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/404302345.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/404302345.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.100|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/403811244.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/403811244.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.71|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/367611322.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/367611322.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.116|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/401234939.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/401234939.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.88|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/160560214.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/160560214.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.121|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/398004122.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/398004122.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+58.144.156.15|101.206.169.172|29/Jan/2019:09:03:28 +0800|0.048|0.048|cap.169kang.com|GET /lib/clicaptcha.php?t=0.5302823388164425&nowebp=1 HTTP/1.1|200|59476|http://cap.169kang.com/index.php?continue=https://m.169kang.com/question/140545402.html|Mozilla/5.0 (iPhone; CPU iPhone OS 12_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 MQQBrowser/9.0.1 Mobile/15E148 Safari/604.1 MttCustomUA/2 QBWebViewType/1 WKType/1|unix:/tmp/php-fcgi.sock|-|PHPSESSID=4ka6gk2mnbstr8c6fsvhvlcp25|-
+42.236.10.109|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/172049794.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/172049794.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.76|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/400040728.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/400040728.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.108|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/171712602.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/171712602.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.105|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/153119702.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/153119702.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.120|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/156509625.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/156509625.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.74|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/151405913.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/151405913.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.109|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/404996337.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/404996337.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.71|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/362304041.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/362304041.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.123|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/156735262.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/156735262.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.120|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/151373739.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/151373739.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+220.194.106.92|221.192.179.163|29/Jan/2019:09:03:28 +0800|0.002|0.002|cap.169kang.com|GET /check.php?tn_r=125.99999999999999 HTTP/1.1|200|33|http://cap.169kang.com/index.php?continue=https://wap.169kang.com/question/169058436.html|Mozilla/5.0 (iPhone; CPU iPhone OS 12_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 MQQBrowser/9.0.1 Mobile/15E148 Safari/604.1 MttCustomUA/2 QBWebViewType/1 WKType/1|unix:/tmp/php-fcgi.sock|-|PHPSESSID=3qr4dp7j8rf1qt2jepgmhp7p51|-
+42.236.10.123|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/152556391.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/152556391.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.71|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/149318748.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/149318748.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.110|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/147490141.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/147490141.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.105|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/168702681.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/168702681.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.72|-|29/Jan/2019:09:03:28 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/163524712.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/163524712.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.73|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/163675832.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/163675832.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.79|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/149010835.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/149010835.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+220.194.106.92|221.192.179.163|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /action.php?tn_r=125.99999999999999 HTTP/1.1|302|5|http://cap.169kang.com/index.php?continue=https://wap.169kang.com/question/169058436.html|Mozilla/5.0 (iPhone; CPU iPhone OS 12_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 MQQBrowser/9.0.1 Mobile/15E148 Safari/604.1 MttCustomUA/2 QBWebViewType/1 WKType/1|unix:/tmp/php-fcgi.sock|-|PHPSESSID=3qr4dp7j8rf1qt2jepgmhp7p51|-
+42.236.10.91|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/146803810.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/146803810.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.72|-|29/Jan/2019:09:03:28 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/163092800.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/163092800.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.91|-|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/148273334.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/148273334.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+223.166.151.234|112.65.61.177|29/Jan/2019:09:03:29 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://wap.169kang.com/question/130532224.html HTTP/1.1|200|484|https://mingyi.sogou.com/fuwu/vr/11018301/onlyqa/qa?vrid=11018301&keyword=%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A5%B3%E7%94%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%B2%A1%E6%9C%89%E6%84%9F%E8%A7%89%E5%95%8A&docid=b5bcd3ef62b09663-1e27fafa6fa741ad-5cd53bf3cb6e55597850f0b4c22b4620,ec263f29694068e5-ab6f6f7b2eee68f5-0bba67b8eff4fad43bf593af97c5d25b|Mozilla/5.0 (Linux; U; Android 7.1.2; zh-cn; vivo X9s Build/N2G47H) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36|unix:/tmp/php-fcgi.sock|-|PHPSESSID=nanjeoe80jo9c2g73pgqsolos4|-
+42.236.10.83|-|29/Jan/2019:09:03:29 +0800|0.004|0.004|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/147776322.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/147776322.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.113|-|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/166066729.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/166066729.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.109|-|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/144466390.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/144466390.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+111.202.101.111|-|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/150174788.html HTTP/1.1|200|484|-|Mozilla/5.0 (iPhone; CPU iPhone OS 9_3 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13E198 Safari/601.1|unix:/tmp/php-fcgi.sock|-|-|-
+42.236.10.89|-|29/Jan/2019:09:03:29 +0800|0.002|0.002|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/162556277.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/162556277.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+101.206.169.172|-|29/Jan/2019:09:03:29 +0800|0.001|0.001|cap.169kang.com|GET /favicon.ico HTTP/1.1|200|484|-|QQ\xE6\xB5\x8F\xE8\xA7\x88\xE5\x99\xA8 9.0.1 (iPhone; iOS 12.1.2; zh_CN)|unix:/tmp/php-fcgi.sock|-|PHPSESSID=4ka6gk2mnbstr8c6fsvhvlcp25|-
+42.236.10.82|-|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/143684513.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/143684513.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+42.236.10.100|-|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://www.169kang.com/question/146795018.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://www.169kang.com/question/146795018.html|Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.4.2661.102 Safari/537.36; 360Spider|unix:/tmp/php-fcgi.sock|-||-
+220.194.106.92|221.192.179.163|29/Jan/2019:09:03:29 +0800|0.003|0.003|cap.169kang.com|GET /index.php?continue=https://wap.169kang.com/question/169058436.html HTTP/1.1|200|484|http://cap.169kang.com/index.php?continue=https://wap.169kang.com/question/169058436.html|Mozilla/5.0 (iPhone; CPU iPhone OS 12_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 MQQBrowser/9.0.1 Mobile/15E148 Safari/604.1 MttCustomUA/2 QBWebViewType/1 WKType/1|unix:/tmp/php-fcgi.sock|-|PHPSESSID=3qr4dp7j8rf1qt2jepgmhp7p51|-
+
+
+
+
+
+
+
+
+*/1 * * * * /usr/bin/sh /usr/local/sbin/cron_min.sh > /dev/null 2>&1
+	
+
+/usr/bin/sh /usr/local/sbin/cap_cut_log.sh
+#!/bin/bash
+
+Channel="cap"
+Channel_Ask="cap"
+One_Day_Log_Dir="/usr/local/nginx/logs"
+Log_Dir="/usr/local/nginx/logs_min"
+Back_Dir="/home/backup/logs_min"
+Cul_Date_Dir=`date +%Y%m%d`
+S_log_name="${Channel}_access.log"
+One_Day_Log_Name="${Channel_Ask}_day_access.log"
+D_log_Name="${Channel}_access"`date +%m%d%H%M`".log"
+[ ! -d ${Back_Dir}/${Cul_Date_Dir}/${Channel} ] && /bin/mkdir -p ${Back_Dir}/${Cul_Date_Dir}/${Channel}
+cp ${Log_Dir}/${S_log_name} ${Back_Dir}/${Cul_Date_Dir}/${Channel}/${D_log_Name}
+cat ${Log_Dir}/${S_log_name} >> ${One_Day_Log_Dir}/${One_Day_Log_Name}
+echo "" > ${Log_Dir}/${S_log_name}
+cd ${Back_Dir}/${Cul_Date_Dir}/${Channel}
+gzip ${D_log_Name}
+ls -1 *.gz > ${Back_Dir}/${Cul_Date_Dir}/${Channel}/filelist.txt
+sed -i 's/.gz//g' filelist.txt
+
+
+
+
+/usr/bin/sh /usr/local/sbin/rsync_log.sh
+#!/bin/bash
+
+Back_Dir="/home/backup/logs_min"
+Rsync_Dir="/home/anson/access_log/log"
+Cul_Date_Dir=`date +%Y%m%d`
+
+rsync -avL "--rsh=ssh -p 62200" ${Back_Dir}/${Cul_Date_Dir}/ anson@10.5.0.4:${Rsync_Dir}/${Cul_Date_Dir} > /dev/null 2>&1
+https://github.com/ctripcorp/apollo
+
+
+
+
+
+
+<template>
+  <div class="add-user-from">
+    <el-form ref="form" :model="form" label-width="100px">
+      <!--prop表示验证的方式，与验证相关-->
+      <el-form-item label="任务名称" prop="name">
+        <el-input v-model="form.name" style="width: 60%"/>
+      </el-form-item>
+      <el-form-item label="上传文件">
+        <el-upload
+          ref="upload"
+          :file-list="fileList"
+          :data="myData"
+          :headers="myHeader"
+          :limit="3"
+          :auto-upload="true"
+          :on-change="addFile"
+          class="upload-demo"
+          action="http://127.0.0.1:9000/api/task/"
+          multiple
+        >
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" size="mini" @click="insert(form)">创建</el-button>
+        <el-button size="small" @click="cancel">取消</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
+</template>
+<script>
+import { createautoask } from '@/api/tasks/tasks'
+export default {
+  name: 'TaskForm',
+  props: {
+    form: {
+      type: Object,
+      default() {
+        return {
+          name: ''
+        }
+      }
+    }
+  },
+  data() {
+    return {
+      fileList: [],
+      fileSizeIsSatisfy: true
+    }
+  },
+  computed: {
+    myHeader() {
+      return {
+        'Content-Type': 'multipart/form-data'
+      }
+    },
+    myData() {
+      return {
+        'businessId': this.form.fileId,
+        'businessType': 'sys_file'
+      }
+    }
+  },
+  methods: {
+    submitForm() {
+    },
+    cancel() {
+    },
+    uploadUrl() {
+      return 'http://127.0.0.1:9000/api/task/playbook/19/01'
+    },
+    addFile(file, fileList) {
+      this.fileList = fileList
+      // 限制上传文件为5M
+      var sizeIsSatisfy = file.size < 5 * 1024 * 1024
+      if (sizeIsSatisfy) {
+        return true
+      } else {
+        this.fileSizeIsSatisfy = false
+        return false
+      }
+    },
+    insert(formName) {
+      console.log(formName)
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          if (this.fileList.length <= 0) {
+            this.$message.error('请至少上传一个文件！')
+            return
+          }
+          if (!this.fileSizeIsSatisfy) {
+            this.$message.error('上传失败！存在文件大小超过5M！')
+            return
+          }
+          // 手动上传文件，在点击确认的时候 校验通过才会去请求上传文件的url
+          this.$refs.upload.submit()
+          createautoask(this.form).then((res) => {
+            if (res.data.status === 200) {
+              this.form = {}
+              this.fileList = []
+              this.dialogFormVisible = false
+              this.$message.success('新增成功！')
+              this.getUploadList(1)
+            } else {
+              this.$message.error(res.data.msg)
+            }
+          })
+            .catch((error) => {
+              this.$message.error(error)
+            })
+        } else {
+          this.$message.error('error submit!!')
+          return false
+        }
+      })
+    }
+  }
+}
+</script>
+

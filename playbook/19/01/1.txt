@@ -1,0 +1,91 @@
+INSTALLED_APPS = [
+    ...
+    'django_filters',
+]
+
+
+
+
+```
+import django_filters
+from .models import WorkOrder
+
+
+class WorkorderFilter(django_filters.FilterSet):
+    title = django_filters.CharFilter(field_name="title", lookup_expr="icontains")
+    order_contents = django_filters.CharFilter(field_name="order_contents", lookup_expr="icontains")
+
+    class Meta:
+        model = WorkOrder]
+        fields = ["title", "order_contents"]
+```
+
+
+models.py
+```
+class Book(models.Model):
+    """
+    图书
+    """
+
+    name = models.CharField("书名", max_length=100, help_text="书名")
+    # 作者和书是多对多的关系
+    authors = models.ManyToManyField(Author, verbose_name="作者", help_text="作者")
+    # 一本书只能被一家出版，出版商可以出版多本书
+    publisher = models.ForeignKey(Publish, verbose_name="出版社", help_text="出版商")
+    publication_date = models.DateField("出版时间", null=True, blank=True, help_text="出版日前")
+
+    class Meta:
+        verbose_name = '图书信息'
+        verbose_name_plural = verbose_name
+        ordering = ['-publication_date']
+
+    def __str__(self):
+        return self.name
+```
+
+
+views.py
+def filter_books(objects, request):
+    filter_author = request.POST['author']
+    if (filter_author):
+        objects = objects.filter(author__icontains=filter_author)
+    return objects
+
+上面的方式只有搜索一个字段，搜索的字段多少是什么样子呢？
+
+def filter_libooks(objects, request):
+    filter_publication_date = request.POST['publication_date']
+    filter_authors = request.POST['authors']
+    filter_name = request.POST['name']
+    if (filter_publication_date):
+        objects = objects.filter(book__filter_publication_date__contains=filter_filter_publication_date)
+    if (filter_authors):
+        objects = objects.filter(book__filter_authors__contains=filter_filter_authors)
+    if (filter_name):
+        objects = objects.filter(uuid_contains=filter_name)        
+    return objects
+
+def filter_books(objects, request):
+    filter_author = request.POST['author']
+    filter_press = request.POST['press']
+    filter_isbn = request.POST['isbn']
+    filter_name = request.POST['name']
+    if (filter_author):
+        objects = objects.filter(author__contains=filter_author)
+    if (filter_press):
+        objects = objects.filter(press__contains=filter_press)
+    if (filter_isbn):
+        objects = objects.filter(isbn__contains=filter_isbn)
+    if (filter_name):
+        objects = objects.filter(name__contains=filter_name)
+    return objects
+
+作者：fall4u
+链接：https://www.jianshu.com/p/6dd900d38035
+來源：简书
+简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
+
+
+
+

@@ -1,0 +1,6 @@
+---
+- hosts: testhost
+  remote_user: root
+  tasks:
+    - name: test_playbook
+      shell: touch /tmp/testyml.txt

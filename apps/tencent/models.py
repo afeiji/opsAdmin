@@ -1,0 +1,38 @@
+from django.db import models
+
+class tencent(models.Model):
+    Placement = models.CharField(max_length=200,null=True,default="")
+    ProjectId = models.CharField(max_length=200,null=True,default="")
+    HostIds = models.CharField(max_length=200,null=True,default="")
+    InstanceId = models.CharField(max_length=200,null=True,default="")
+    InstanceType = models.CharField(max_length=200,null=True,default="")
+    CPU = models.CharField(max_length=200,null=True,default="")
+    Memory = models.CharField(max_length=200,null=True,default="")
+    RestrictState = models.CharField(max_length=200,null=True,default="")
+    InstanceName = models.CharField(max_length=200,null=True,default="")
+    InstanceChargeType = models.CharField(max_length=200,null=True,default="")
+    SystemDisk = models.CharField(max_length=200,null=True,default="")
+    DiskId = models.CharField(max_length=200,null=True,default="")
+    DiskSize = models.CharField(max_length=200,null=True,default="")
+    DataDisks = models.CharField(max_length=200,null=True,default="")
+    PrivateIpAddresses = models.CharField(max_length=200,null=True,default="")
+    PublicIpAddresses = models.CharField(max_length=200,null=True,default="")
+    InternetAccessible = models.CharField(max_length=200,null=True,default="")
+    InternetMaxBandwidthOut = models.CharField(max_length=200,null=True,default="")
+    PublicIpAssigned = models.CharField(max_length=200,null=True,default="")
+    VirtualPrivateCloud = models.CharField(max_length=200,null=True,default="")
+    SubnetId = models.CharField(max_length=200,null=True,default="")
+    AsVpcGateway = models.CharField(max_length=200,null=True,default="")
+    PrivateIpAddresses = models.CharField(max_length=200,null=True,default="")
+    ImageId = models.CharField(max_length=200,null=True,default="")
+    RenewFlag = models.CharField(max_length=200,null=True,default="")
+    CreatedTime = models.CharField(max_length=200,null=True,default="")
+    ExpiredTime = models.CharField(max_length=200,null=True,default="")
+    OsName = models.CharField(max_length=200,null=True,default="")
+    SecurityGroupIds = models.CharField(max_length=200,null=True,default="")
+    LoginSettings = models.CharField(max_length=200,null=True,default="")
+    InstanceState = models.CharField(max_length=200,null=True,default="")
+    Tags = models.CharField(max_length=200,null=True,default="")
+
+    class Meta:
+        db_table = "tencent"

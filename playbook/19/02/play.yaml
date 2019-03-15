@@ -1,0 +1,8 @@
+---                                                                                                                                                                            
+- hosts: testhost 
+  become_user: root
+  gather_facts: no
+  tasks:
+  - name: test_playbook
+    file: path=/tmp/testyml.txt state=touch  mode=0777
+  
