@@ -31,6 +31,10 @@ class UsersSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "name", "phone", "email", "is_active", "last_login")
 
     def update(self, instance, validated_data):
+        # self.Meta.model.objects.filter(id=instance.id).update(**validated_data)
+        instance.username = validated_data.get("username",instance.username)
+        instance.name = validated_data.get("name",instance.name)
+        instance.email = validated_data.get("email",instance.email)
         instance.phone = validated_data.get("phone",instance.phone)
         instance.is_active = validated_data.get("is_active",instance.is_active)
         instance.save()

@@ -16,8 +16,8 @@ def get_user_projects(request):
     for group in all_groups:
         for user_member in group.members.list():
             # 根据登录用户获取gitlab项目，username是前端params传进来的
-            # if user_member.username == request.user.username:
-            if user_member.username == request.GET.get('username',''):
+            if user_member.username == request.user.username:
+            # if user_member.username == request.GET.get('username',''):
             # if user_member.username == "ullone":
                 for project in group.projects.list(all=True):
                     user_projects.append(project)
@@ -29,8 +29,8 @@ def get_user_projects(request):
     for project in all_projects:
         for member in project.members.list():
             # 根据登录用户获取gitlab项目，username是前端params传进来的
-            # if member.username == request.user.username:
-            if member.username == request.GET.get('username',''):
+            if member.username == request.user.username:
+            # if member.username == request.GET.get('username',''):
             # if member.username == "ullone":
                 user_projects.append(project)
     # print(user_projects)

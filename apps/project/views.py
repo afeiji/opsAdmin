@@ -4,15 +4,18 @@ from django.views.generic import View
 from django.http import HttpResponse
 from utils.gitlab_api import get_user_projects, get_project_versions
 import json
+from rest_framework import permissions, viewsets
 
+# class ProjectListView(View):
+class ProjectListView(viewsets.ViewSet):
 
-class ProjectListView(View):
+    permission_classes = (permissions.IsAuthenticated,)
     """
     登陆用户所有项目
     """
 
-
-    def get(self, request):
+    def list(self,request, *args, **kwargs):
+    # def get(self, request):
         my_projects = get_user_projects(request)
         project_num = len(my_projects)
         json_list = []
@@ -29,11 +32,16 @@ class ProjectListView(View):
         json_res['count'] = project_num
         return HttpResponse(json.dumps(json_res), content_type="application/json")
 
-class ProjectVersionView(View):
+
+# class ProjectVersionView(View):
+class ProjectVersionView(viewsets.ViewSet):
+
+    permission_classes = (permissions.IsAuthenticated,)
     """
     获取指定的项目所有版本
     """
-    def get(self,request):
+    def list(self,request, *args, **kwargs):
+    # def get(self,request):
         project_id = request.GET.get('project_id')
         tag_list = []
         tags = get_project_versions(int(project_id))
@@ -43,3 +51,4 @@ class ProjectVersionView(View):
             tag_dict['info'] = tag.attributes['commit']['message']
             tag_list.append(tag_dict)
         return HttpResponse(json.dumps(tag_list),content_type='application/json')
+

@@ -21,7 +21,7 @@ class UserViewsets(mixins.RetrieveModelMixin,
     update:
         更新user记录
     partial_update:
-        更新user的部门记录
+        更新user的部分记录
     destroy:
         删除user记录
     """
@@ -30,7 +30,6 @@ class UserViewsets(mixins.RetrieveModelMixin,
 
     filter_class = UserFilter
     filter_fields = ("username",)
-
 
 
 class UserRegViewset(viewsets.GenericViewSet,
@@ -46,6 +45,7 @@ class UserRegViewset(viewsets.GenericViewSet,
     """
     queryset = User.objects.all()
     serializer_class = UserRegSerializer
+
 
 class UserInfoViewset(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated,)

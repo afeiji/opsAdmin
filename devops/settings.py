@@ -189,8 +189,8 @@ JWT_AUTH = {
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
 
-QCLOUD_SECRETID = "AKIDFaq5EbGxiQx23213XtCJJ7j9NQuyTq"
-QCLOUD_SECRETKEY = "LTP8fz72lOr23213FerunUyGQN7f4LTP"
+QCLOUD_SECRETID = "123456"
+QCLOUD_SECRETKEY = "123456"
 
 # LOGGING = {
 #     'version': 1,
@@ -230,10 +230,10 @@ QCLOUD_SECRETKEY = "LTP8fz72lOr23213FerunUyGQN7f4LTP"
 
 DOMAIN = "@test.com"
 GITLAB_HTTP_URI = "http://192.168.25.100"
-GITLAB_TOKEN = "Hf5d123LG7N2wJ9Rhe"
+GITLAB_TOKEN = "HfwJ9Rhe"
 
 JENKINS_URL = "http://192.168.25.100/jenkins"
-JENINS_TOKEN = "88d0d3312312183f5a3ac44c6c7f2b494"
+JENINS_TOKEN = "88d0494"
 JENKINS_USERNAME = 'user'
 JENKINS_PASSWORD = ''
 
@@ -243,7 +243,8 @@ djcelery.setup_loader()
 BROKER_URL = 'redis://:123123@192.168.25.100:6379/0' # redis作为中间件
 BROKER_TRANSPORT = 'redis'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler' # Backend数据库
-CELERYD_LOG_FILE = BASE_DIR + "/logs/celery/celery.log"
+CELERYD_LOG_FILE = BASE_DIR + "/logs/celery/celery.log" # log路径
+CELERYBEAT_LOG_FILE = BASE_DIR + "/logs/celery/beat.log" # beat log路径
 
 # 邮件
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -252,4 +253,4 @@ EMAIL_USE_SSL = True    #是否使用SSL加密，qq企业邮箱要求使用
 EMAIL_HOST = 'smtpdm.aliyun.com'   #发送邮件的邮箱 的 SMTP服务器，这里用了163邮箱
 EMAIL_PORT = 465     #发件箱的SMTP服务器端口
 EMAIL_HOST_USER = 'test@notice.test.com'    #发送邮件的邮箱地址
-EMAIL_HOST_PASSWORD = 'fdsf234gfdg..24fd'         #发送邮件的邮箱密码(这里使用的是授权码)
+EMAIL_HOST_PASSWORD = '123456'         #发送邮件的邮箱密码(这里使用的是授权码)

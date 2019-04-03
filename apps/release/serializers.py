@@ -55,3 +55,31 @@ class ReleaseSerializer(serializers.ModelSerializer):
             }
         return ret
 
+class CountProjectSerializer(serializers.ModelSerializer):
+    """
+    发布序列化
+    """
+
+    class Meta:
+        model = Deploy
+        fields = '__all__'
+
+
+class CountUserSerializer(serializers.ModelSerializer):
+    """
+    发布序列化
+    """
+
+    class Meta:
+        model = Deploy
+        fields = '__all__'
+
+    # to_representation 这是只读，就是get请求返回出去的
+    def to_representation(self, instance):
+        ret = super(CountUserSerializer, self).to_representation(instance)
+        ret = {}
+        ret['applicant'] = {
+            'id': instance.applicant.id,
+            'name': instance.applicant.username
+        }
+        return ret

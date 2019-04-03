@@ -1,19 +1,18 @@
 #encoding:utf-8
 
-
-from rest_framework import viewsets, response, status
+from rest_framework import viewsets, response, status, mixins, permissions
 from .models import Deploy
-from .serializers import ReleaseSerializer
+from .serializers import ReleaseSerializer, CountProjectSerializer, CountUserSerializer
 from .filters import ReleaseFilter
 from utils.jenkins_api import JenkinsApi
 from .tasks import code_release, send_email
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
-
+from django.db.models import Count
 User = get_user_model()
+from django.http import JsonResponse
 
 import time
-
 
 class ReleaseViewset(viewsets.ModelViewSet):
     queryset = Deploy.objects.all()
@@ -45,7 +44,7 @@ class ReleaseViewset(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         email_list = []
         email_title = request.data['name'] + '上线申请'
-        email_content = request.data['detail']
+        email_content = request.data['detail'] + '\n 点击访问：http://devops.169kang.com/release/list'
         assign_to_id = request.data['assign_to']
         assign_to_email = User.objects.get(pk=assign_to_id).email
         email_list.append(assign_to_email)
@@ -95,3 +94,47 @@ class ReleaseViewset(viewsets.ModelViewSet):
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class CountChartsViewsetV2(viewsets.ViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+    NowMonth = time.strftime("%Y-%m", time.localtime())
+    def list(self, request, *args, **kwargs):
+        valuemonth = request.GET.get('valuemonth',None)
+        if valuemonth:
+            queryset = Deploy.objects.filter(status__exact=3, deploy_time__startswith=valuemonth).values_list(
+                "name").annotate(Count('name')).order_by('-name__count')
+        else:
+            queryset = Deploy.objects.filter(status__exact=3, deploy_time__startswith=self.NowMonth).values_list("name").annotate(Count('name')).order_by('-name__count')
+
+        queryset = {
+            "columns": ['项目名', '上线次数'],
+            "rows": [{'项目名': i[0], '上线次数': i[1]} for i in queryset]
+        }
+        return JsonResponse(queryset)
+
+
+class CountUserCViewsetV2(viewsets.ViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+    NowMonth = time.strftime("%Y-%m", time.localtime())
+
+    def list(self, request, *args, **kwargs):
+        projectuser_list = []
+        valuemonth = request.GET.get('valuemonth', None)
+        if valuemonth:
+            _x = Deploy.objects.filter(status__exact=3, deploy_time__startswith=valuemonth)
+        else:
+            _x = Deploy.objects.filter(status__exact=3, deploy_time__startswith=self.NowMonth)
+        for project in _x:
+            projectuser_list.append(project.applicant.username)
+        projectuser_set = set(projectuser_list)
+        queryset = {
+            "columns": ['上线人', '上线次数'],
+            "rows": [{'上线人': i, '上线次数': projectuser_list.count(i)} for i in projectuser_set]
+        }
+        # print("_x", _x)
+        # queryset = Deploy.objects.filter(status__exact=3, deploy_time__startswith=self.NowMonth).values_list("applicant_id").annotate(Count('applicant_id')).order_by('-applicant_id__count')
+        #
+        # queryset = {
+        #     "columns": ['上线人', '上线次数'],
+        #     "rows": [{'上线人': i[0], '上线次数': i[1]} for i in queryset]
+        # }
+        return JsonResponse(queryset)
