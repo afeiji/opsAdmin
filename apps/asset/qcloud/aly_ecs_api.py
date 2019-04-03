@@ -13,8 +13,8 @@ from asset.models import Host
 
 # 创建AcsClient实例
 client = AcsClient(
-  "LTAIvAu4wY0oTCuE",
-  "bbzjONy6OfzERm60qzmOn1GdPKZuqc",
+  "123",
+  "123456",
   "cn-shenzhen"
 );
 
