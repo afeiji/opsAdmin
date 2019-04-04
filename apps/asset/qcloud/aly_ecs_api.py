@@ -9,14 +9,15 @@ from asset.serilalizsers import HostSerilalizer
 from django.utils.six import BytesIO
 from rest_framework.parsers import JSONParser
 from asset.models import Host
+from devops.settings import FJAccessKeyId, FJAccessKeySecret
 
 
 # 创建AcsClient实例
 client = AcsClient(
-  "123",
-  "123456",
+  FJAccessKeyId,
+  FJAccessKeySecret,
   "cn-shenzhen"
-);
+)
 
 def get_host():
     # 创建request，并设置参数
