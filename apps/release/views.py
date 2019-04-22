@@ -12,7 +12,6 @@ from django.db.models import Count
 User = get_user_model()
 from django.http import JsonResponse
 import django_filters
-
 import time
 
 class ReleaseViewset(viewsets.ModelViewSet):
@@ -20,7 +19,7 @@ class ReleaseViewset(viewsets.ModelViewSet):
     serializer_class = ReleaseSerializer
     # filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filter_class = ReleaseFilter
-    filter_fields = ("name", "applicant")
+    filter_fields = ("name",)
 
 
     def get_queryset(self):
@@ -39,7 +38,7 @@ class ReleaseViewset(viewsets.ModelViewSet):
         else:
             queryset = Deploy.objects.all()
 
-        if "运维组" not in role_name:
+        if "管理员" not in role_name:
             queryset = queryset.filter(applicant=applicant)
         return queryset
 
@@ -134,19 +133,35 @@ class CountUserCViewsetV2(viewsets.ViewSet):
             # _x = Deploy.objects.filter(status__exact=3, deploy_time__startswith=self.NowMonth)
             queryset_filter = Deploy.objects.filter(status__exact=3, deploy_time__startswith=self.NowMonth).values_list(
                 "applicant__username").annotate(Count('applicant__username')).order_by('-applicant__username__count')
-        # for project in _x:
-        # for project in queryset_filter:
-        #     projectuser_list.append(project.applicant.username)
-        # projectuser_set = set(projectuser_list)
-        # queryset = {
-        #     "columns": ['上线人', '上线次数'],
-        #     "rows": [{'上线人': i, '上线次数': projectuser_list.count(i)} for i in projectuser_set]
-        # }
-        # print("_x", _x)
-        # queryset = Deploy.objects.filter(status__exact=3, deploy_time__startswith=self.NowMonth).values_list("applicant_id").annotate(Count('applicant_id')).order_by('-applicant_id__count')
-        #
         queryset = {
             "columns": ['上线人', '上线次数'],
             "rows": [{'上线人': i[0], '上线次数': i[1]} for i in queryset_filter]
         }
         return JsonResponse(queryset)
+
+class PermNextViewset(viewsets.ViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def list(self,request, *args, **kwargs):
+        status = self.request.GET.get('status', None)
+        # nextuser = User.objects.get(username=request.user.username)
+        nextuser = request.user.username
+        print(nextuser == "tompson")
+
+        # if nextuser == "tompson" or nextuser.groups.filter(name="主管"):
+        if nextuser == "tompson":
+            return JsonResponse({"PermNext": True})
+
+        elif nextuser == "silvia":
+            if int(status) < 1:
+                return JsonResponse({"PermNext": True})
+            else:
+                return JsonResponse({"PermNext": False})
+
+        else:
+            return JsonResponse({"PermNext": False})
+
+        # if nextuser in ['tompson','silvia']:
+        #     return JsonResponse({"PermNext": "True"})
+        # else:
+        #     return JsonResponse({"PermNext": "False"})

@@ -28,7 +28,7 @@ def code_release(pk, deploy):
     number = jenkins.get_next_build_number(deploy['name'])
     # Tag是自己在jenkins命名的tag变量名
     jenkins.build_job(deploy['name'], parameters={'Tag': deploy['version']})
-    time.sleep(10)
+    time.sleep(15)
     console_output = jenkins.get_build_console_output(deploy['name'], number)
     deploy['console_output'] = console_output
     Deploy.objects.filter(pk=pk).update(**deploy)
